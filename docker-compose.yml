@@ -1,0 +1,44 @@
+version: '2'
+
+services:
+
+    mongo:
+        container_name: blu-mongo
+        image: mongo:latest
+        ports:
+            - "27017:27017"
+        volumes:
+            - "./mongo/db:/data/db"
+
+    nginx:
+        build: ./nginx
+        container_name: blu-nginx
+        links:
+            - userservice
+            - statusservice
+        ports:
+            - "80:80"
+
+    userservice:
+        build: ./user.service
+        container_name: userservice
+        environment:
+            - loglevel=none
+        links:
+            - "mongo:mongo"
+        working_dir: "/usr/src/app"
+        ports:
+            - "3000:3000"
+        command: npm start
+
+    statusservice:
+        build: ./status.service
+        container_name: statusservice
+        environment:
+            - loglevel=none
+        links:
+            - "mongo:mongo"
+        working_dir: "/usr/src/app"
+        ports:
+            - "3001:3001"
+        command: npm start

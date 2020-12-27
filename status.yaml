@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statusservice
+  labels:
+    app: statusservice
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: statusservice
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 33%
+  template:
+    metadata:
+      labels:
+        app: statusservice
+    spec:
+      containers:
+        - name: statusservice
+          image: alenguler/statusservice
+          ports:
+          - containerPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: statusservice
+  labels:
+    name: statusservice
+spec:
+  type: ClusterIP    
+  ports:
+    - port: 3001
+      targetPort: 3001
+      protocol: TCP
+  selector:
+    app: statusservice
+
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: statusservice-autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: statusservice
+  minReplicas: 3
+  maxReplicas: 9
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 5

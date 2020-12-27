@@ -1,0 +1,42 @@
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - checkout: self
+  - task: DockerCompose@0
+    displayName: build services
+    inputs:
+      containerregistrytype: Container Registry
+      dockerRegistryEndpoint: 47baffc8-c08b-4a31-9456-055be2b12b1b
+      action: Build services
+      additionalImageTags: >-
+        mongo
+
+        nginx
+
+        userservice
+
+        statusservice
+      includeLatestTag: true
+  - task: DockerCompose@0
+    displayName: push services
+    inputs:
+      containerregistrytype: Container Registry
+      dockerRegistryEndpoint: 47baffc8-c08b-4a31-9456-055be2b12b1b
+      action: Push services
+      additionalImageTags: >-
+        mongo
+
+        nginx
+
+        userservice
+
+        statusservice
+      includeLatestTag: true
+  - task: PublishPipelineArtifact@1
+    displayName: Publish Pipeline Artifact
+    inputs:
+      artifactName: alenbl
+...
